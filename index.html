@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sesión 7 · El papel manda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --paper: #F4F1E9;
+  --card: #FBFAF6;
+  --ink-blue: #1F3A5F;
+  --ink-blue-light: #3E5C82;
+  --wine: #7A2E3A;
+  --gold: #A8873E;
+  --ink: #1A1814;
+  --ink-soft: #3A342C;
+  --mid: #6E655A;
+  --border: #D9D0C0;
+  --border-soft: #E6DFD2;
+  --serif: 'Spectral', Georgia, serif;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+}
+
+html, body {
+  height: 100%;
+  background: var(--ink);
+  font-family: var(--sans);
+  color: var(--ink);
+  overflow: hidden;
+}
+
+.deck { width: 100%; height: 100vh; position: relative; }
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--paper);
+  overflow-y: auto;
+  padding: clamp(28px, 5vh, 64px) clamp(16px, 6vw, 96px) 72px;
+}
+.slide.active { display: flex; }
+
+.wrap { width: 100%; max-width: 1120px; margin: 0 auto; }
+
+/* ---------- Tipografía base ---------- */
+.kicker {
+  font-family: var(--sans);
+  font-size: clamp(11px, 1.1vw, 13px);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--wine);
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 12px;
+}
+.kicker::before {
+  content: "";
+  width: 28px; height: 1px;
+  background: var(--gold);
+}
+h1, h2, h3 { font-family: var(--serif); color: var(--ink-blue); font-weight: 700; line-height: 1.12; }
+h2 { font-size: clamp(28px, 3.6vw, 46px); margin-bottom: 18px; }
+h3 { font-size: clamp(20px, 2vw, 26px); margin-bottom: 10px; }
+p, li { font-size: clamp(15px, 1.45vw, 19px); line-height: 1.55; color: var(--ink-soft); }
+.lead { font-size: clamp(17px, 1.7vw, 22px); color: var(--ink-soft); max-width: 860px; }
+strong { color: var(--ink); font-weight: 600; }
+em { font-family: var(--serif); font-style: italic; }
+
+.rule {
+  height: 1px; background: var(--border);
+  margin: 26px 0; position: relative;
+}
+.rule::after {
+  content: "§";
+  position: absolute; left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--paper);
+  padding: 0 12px;
+  font-family: var(--serif);
+  color: var(--gold);
+  font-size: 18px;
+}
+
+/* ---------- Portada ---------- */
+.cover {
+  border: 1px solid var(--ink-blue);
+  outline: 1px solid var(--border);
+  outline-offset: 8px;
+  background: var(--card);
+  padding: clamp(32px, 6vh, 64px) clamp(24px, 5vw, 64px);
+  position: relative;
+}
+.seal {
+  width: 92px; height: 92px;
+  border-radius: 50%;
+  border: 2px solid var(--wine);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: var(--wine);
+  font-family: var(--serif);
+  position: absolute; top: 28px; right: 28px;
+  transform: rotate(-8deg);
+}
+.seal::before {
+  content: ""; position: absolute; inset: 5px;
+  border: 1px dashed var(--wine); border-radius: 50%;
+}
+.seal b { font-size: 26px; font-weight: 800; line-height: 1; }
+.seal span { font-family: var(--sans); font-size: 9px; letter-spacing: 0.2em; margin-top: 4px; }
+.cover .session {
+  font-family: var(--sans); font-size: 13px; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold);
+  margin-bottom: 10px;
+}
+.cover h1 { font-size: clamp(42px, 6.4vw, 84px); margin-bottom: 14px; max-width: 80%; }
+.cover .subtitle {
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(18px, 2vw, 26px); color: var(--ink-soft);
+  max-width: 760px; margin-bottom: 36px;
+}
+.meta {
+  display: flex; flex-wrap: wrap; gap: 10px 28px;
+  border-top: 1px solid var(--border); padding-top: 18px;
+}
+.meta div { font-size: 13px; color: var(--mid); }
+.meta div b { display: block; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-blue); margin-bottom: 2px; font-weight: 600; }
+
+/* ---------- Agenda ---------- */
+.agenda { list-style: none; border-top: 1px solid var(--border); }
+.agenda li {
+  display: grid; grid-template-columns: 64px 1fr auto;
+  align-items: baseline; gap: 16px;
+  padding: 16px 0; border-bottom: 1px solid var(--border);
+}
+.agenda .n { font-family: var(--serif); font-size: 30px; color: var(--gold); font-weight: 600; }
+.agenda .t { font-family: var(--serif); font-size: clamp(19px, 2vw, 25px); color: var(--ink-blue); font-weight: 600; }
+.agenda .t small { display: block; font-family: var(--sans); font-size: 14px; color: var(--mid); font-weight: 400; margin-top: 2px; }
+.agenda .m { font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--wine); font-weight: 600; white-space: nowrap; }
+
+/* ---------- Nota de apertura ---------- */
+.opening-note {
+  background: var(--card);
+  border-left: 4px solid var(--gold);
+  padding: 28px 32px;
+  max-width: 900px;
+}
+.opening-note p.scene {
+  font-family: var(--serif); font-size: clamp(22px, 2.6vw, 32px);
+  color: var(--ink); line-height: 1.35; margin-bottom: 18px;
+}
+.three-things { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 26px; }
+.three-things div {
+  border: 1px solid var(--border); background: var(--card);
+  padding: 16px 18px;
+}
+.three-things b { font-family: var(--serif); color: var(--wine); font-size: 22px; display: block; margin-bottom: 4px; }
+
+/* ---------- Apertura de bloque ---------- */
+.slide.block-open { background: var(--ink-blue); }
+.block-open .kicker { color: var(--gold); }
+.block-open .big-n {
+  font-family: var(--serif); font-size: clamp(90px, 14vw, 180px);
+  color: transparent; -webkit-text-stroke: 1.5px var(--gold);
+  line-height: 0.9; margin-bottom: 10px;
+}
+.block-open h2 { color: var(--paper); font-size: clamp(36px, 5vw, 64px); }
+.block-open p { color: #D9D0C0; max-width: 760px; }
+.block-open .arts {
+  margin-top: 24px; display: inline-block;
+  border: 1px solid var(--ink-blue-light); padding: 8px 14px;
+  font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold);
+}
+
+/* ---------- Columnas de concepto ---------- */
+.cols { display: grid; gap: 18px; margin-top: 8px; }
+.cols.two { grid-template-columns: 1fr 1fr; }
+.cols.three { grid-template-columns: repeat(3, 1fr); }
+.concept {
+  background: var(--card); border: 1px solid var(--border);
+  padding: 22px 24px;
+}
+.concept .tag {
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--gold); font-weight: 600; margin-bottom: 8px;
+}
+.concept.accent { border-top: 3px solid var(--ink-blue); }
+.concept.wine { border-top: 3px solid var(--wine); }
+.concept.goldtop { border-top: 3px solid var(--gold); }
+.callout {
+  margin-top: 22px; padding: 14px 20px;
+  border: 1px dashed var(--gold); background: rgba(168,135,62,0.06);
+  font-size: clamp(14px, 1.3vw, 17px); color: var(--ink-soft);
+}
+.callout b { color: var(--wine); }
+
+/* ---------- Ficha de artículo ---------- */
+.fichas { display: grid; gap: 18px; }
+.fichas.two { grid-template-columns: 1fr 1fr; }
+.fichas.three { grid-template-columns: repeat(3, 1fr); }
+.ficha {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-top: 4px solid var(--wine);
+  padding: 22px 24px 20px;
+  position: relative;
+}
+.ficha .art {
+  display: inline-block;
+  font-family: var(--sans); font-size: 12px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--gold); border: 1px solid var(--gold);
+  padding: 4px 10px; margin-bottom: 14px;
+}
+.ficha h3 { font-size: clamp(19px, 1.9vw, 24px); margin-bottom: 8px; }
+.ficha p { font-size: clamp(14px, 1.3vw, 17px); }
+.ficha .plain {
+  margin-top: 12px; padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+  font-size: clamp(13px, 1.2vw, 15px); color: var(--mid);
+}
+.ficha .plain b { color: var(--wine); }
+.ficha.small { border-top-color: var(--gold); }
+.bridge {
+  margin-top: 18px; display: flex; gap: 14px; align-items: baseline;
+  font-size: clamp(14px, 1.25vw, 16px); color: var(--mid);
+}
+.bridge b { color: var(--ink-blue); white-space: nowrap; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
+
+/* ---------- Caso ---------- */
+.case {
+  background: var(--card); border: 1px solid var(--border);
+  display: grid; grid-template-columns: 1.35fr 1fr;
+}
+.case .story { padding: 28px 30px; }
+.case .reading {
+  padding: 28px 30px; background: rgba(31,58,95,0.05);
+  border-left: 1px solid var(--border);
+}
+.labels { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.label {
+  font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 4px 10px; border: 1px solid var(--ink-blue); color: var(--ink-blue);
+}
+.label.open { border-color: var(--wine); color: var(--wine); }
+.label.mx { border-color: var(--gold); color: var(--gold); }
+.case h2 { font-size: clamp(24px, 2.8vw, 36px); margin-bottom: 14px; }
+.case .story p + p { margin-top: 10px; }
+.case .reading .tag {
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--wine); font-weight: 600; margin-bottom: 10px;
+}
+.case .reading p.key {
+  font-family: var(--serif); font-size: clamp(18px, 1.9vw, 24px);
+  color: var(--ink-blue); line-height: 1.35; margin-bottom: 14px;
+}
+.muletilla {
+  margin-top: 16px; padding: 10px 14px;
+  border-left: 3px solid var(--wine);
+  font-family: var(--serif); font-style: italic;
+  font-size: clamp(14px, 1.3vw, 17px); color: var(--wine);
+}
+.matiz { font-size: clamp(13px, 1.15vw, 15px); color: var(--mid); }
+.matiz b { color: var(--ink-blue); }
+
+/* ---------- Pregunta ---------- */
+.slide.question { background: var(--ink-blue); }
+.question .kicker { color: var(--gold); }
+.question .q-label {
+  display: inline-block; font-size: 12px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--ink-blue); background: var(--gold);
+  padding: 6px 12px; margin-bottom: 26px;
+}
+.question .q-text {
+  font-family: var(--serif); font-size: clamp(26px, 3.6vw, 46px);
+  color: var(--paper); line-height: 1.25; max-width: 980px;
+}
+.question .hint {
+  margin-top: 30px; padding-top: 16px;
+  border-top: 1px solid var(--ink-blue-light);
+  color: #D9D0C0; font-size: clamp(14px, 1.3vw, 17px); max-width: 860px;
+}
+.question .hint b { color: var(--gold); }
+.slide.question.ia { background: #17304F; }
+.ia .q-label { background: var(--paper); }
+
+/* ---------- Tarea ---------- */
+.exercises { list-style: none; counter-reset: ex; margin: 6px 0 22px; }
+.exercises li {
+  counter-increment: ex;
+  display: grid; grid-template-columns: 40px 1fr; gap: 10px;
+  padding: 9px 0; border-bottom: 1px solid var(--border-soft);
+  font-size: clamp(14px, 1.3vw, 17px);
+}
+.exercises li::before {
+  content: counter(ex);
+  font-family: var(--serif); font-weight: 700; color: var(--gold); font-size: 20px;
+}
+.exercises li span.a { color: var(--wine); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.delivery {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+}
+.delivery div {
+  border: 1px solid var(--border); background: var(--card);
+  padding: 12px 14px; font-size: 14px; color: var(--ink-soft);
+}
+.delivery b { display: block; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--wine); margin-bottom: 4px; }
+.spirit { margin-top: 16px; font-family: var(--serif); font-style: italic; font-size: clamp(16px, 1.6vw, 20px); color: var(--ink-blue); }
+
+/* ---------- Cierre ---------- */
+.closing {
+  border: 1px solid var(--ink-blue);
+  outline: 1px solid var(--border); outline-offset: 8px;
+  background: var(--card);
+  padding: clamp(40px, 8vh, 80px) clamp(24px, 6vw, 80px);
+  text-align: center;
+}
+.closing .quote {
+  font-family: var(--serif); font-size: clamp(28px, 4vw, 52px);
+  color: var(--ink-blue); line-height: 1.2; font-weight: 600;
+}
+.closing .quote em { color: var(--wine); }
+.closing .next {
+  margin-top: 30px; font-size: 13px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--mid);
+}
+.closing .next b { color: var(--gold); }
+
+/* ---------- Navegación ---------- */
+.progress-bar {
+  position: fixed; bottom: 0; left: 0;
+  height: 3px; background: var(--wine);
+  transition: width 0.4s ease; z-index: 100;
+}
+.counter {
+  position: fixed; bottom: 16px; right: 20px;
+  font-size: 12px; font-weight: 500; letter-spacing: 0.14em;
+  color: var(--mid); z-index: 100;
+}
+.nav {
+  position: fixed; bottom: 10px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; gap: 8px; z-index: 100;
+}
+.nav button {
+  background: var(--paper); border: 1px solid var(--border);
+  width: 36px; height: 36px; border-radius: 50%;
+  cursor: pointer; color: var(--ink-blue); font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+.nav button:hover { background: var(--ink-blue); color: var(--paper); }
+.nav button:disabled { opacity: 0.35; cursor: default; }
+
+@media (max-width: 820px) {
+  .cols.two, .cols.three, .fichas.two, .fichas.three,
+  .three-things, .case, .delivery { grid-template-columns: 1fr; }
+  .case .reading { border-left: none; border-top: 1px solid var(--border); }
+  .seal { position: static; margin-bottom: 18px; }
+  .cover h1 { max-width: 100%; }
+  .agenda li { grid-template-columns: 44px 1fr; }
+  .agenda .m { grid-column: 2; }
+}
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- 1 · Portada -->
+<section class="slide">
+  <div class="wrap">
+    <div class="cover">
+      <div class="seal"><b>S7</b><span>LC</span></div>
+      <div class="kicker">Legislación Cultural</div>
+      <div class="session">Sesión 7 · Titularidad y transmisión de derechos</div>
+      <h1>El papel manda</h1>
+      <p class="subtitle">Quién es dueño, cómo se pasa y por qué todo tiene que estar por escrito</p>
+      <div class="meta">
+        <div><b>Materia</b>Legislación Cultural (LC)</div>
+        <div><b>Programa</b>Producción e Industria de la Música · 7º cuatrimestre</div>
+        <div><b>Imparte</b>Ed Turner</div>
+        <div><b>Año</b>2026</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 · Agenda -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Agenda</div>
+    <h2>Lo que vamos a ver hoy</h2>
+    <ol class="agenda">
+      <li><span class="n">01</span><span class="t">¿De quién es?<small>Titular originario, titular derivado y por qué comprar el objeto no es comprar la obra</small></span><span class="m">15 min</span></li>
+      <li><span class="n">02</span><span class="t">Vender o rentar<small>Transferencia, licencia exclusiva y licencia no exclusiva</small></span><span class="m">17 min</span></li>
+      <li><span class="n">03</span><span class="t">El papel manda<small>Por escrito, con pago, con fecha de caducidad y registrado</small></span><span class="m">18 min</span></li>
+      <li><span class="n">✦</span><span class="t">Tarea 7 y cierre<small>Radiografía de un contrato real</small></span><span class="m">6 min</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- 3 · Apertura -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Para arrancar</div>
+    <div class="opening-note">
+      <p class="scene">Tienes 19 años. Una disquera te ofrece contrato. Te mandan un PDF de 30 páginas y una pluma.</p>
+      <p><strong>¿Qué es lo primero que buscas?</strong></p>
+    </div>
+    <div class="three-things">
+      <div><b>1</b>Quién es el dueño de tu música, antes y después de firmar</div>
+      <div><b>2</b>Si estás vendiendo o solo rentando</div>
+      <div><b>3</b>Qué tiene que decir el papel para que valga</div>
+    </div>
+  </div>
+</section>
+
+<!-- 4 · Bloque 1 apertura -->
+<section class="slide block-open">
+  <div class="wrap">
+    <div class="kicker">Bloque 1 · 15 min</div>
+    <div class="big-n">01</div>
+    <h2>¿De quién es?</h2>
+    <p class="lead">Ser autor y ser dueño no siempre van juntos. Hoy vemos cómo se separan.</p>
+    <div class="arts">LFDA · Arts. 30, 38 y 41</div>
+  </div>
+</section>
+
+<!-- 5 · Bloque 1 concepto -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Bloque 1 · Concepto clave</div>
+    <h2>Primer dueño y nuevo dueño</h2>
+    <div class="cols two">
+      <div class="concept accent">
+        <div class="tag">Titular originario</div>
+        <h3>El que creó la obra</h3>
+        <p>El autor es el primer dueño de su obra. Lo vimos en la Sesión 6 con los arts. 25 y 26.</p>
+      </div>
+      <div class="concept wine">
+        <div class="tag">Titular derivado</div>
+        <h3>El que la recibió</h3>
+        <p>Quien obtiene los derechos porque el autor se los pasó: una editora, una disquera, un inversionista.</p>
+      </div>
+    </div>
+    <div class="callout"><b>Recuerda a McCartney:</b> escribió las canciones y aun así no controlaba el catálogo. Autor para siempre, dueño no necesariamente.</div>
+  </div>
+</section>
+
+<!-- 6 · Bloque 1 anclaje legal -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Bloque 1 · Anclaje legal</div>
+    <div class="fichas three">
+      <div class="ficha">
+        <span class="art">Art. 30 · LFDA</span>
+        <h3>El dueño puede pasar sus derechos</h3>
+        <p>Quien tiene los derechos patrimoniales puede transferirlos o dar licencias de uso, exclusivas o no exclusivas.</p>
+        <p class="plain"><b>En corto:</b> es la puerta de entrada de toda la clase de hoy.</p>
+      </div>
+      <div class="ficha">
+        <span class="art">Art. 38 · LFDA</span>
+        <h3>Comprar el objeto no es comprar la obra</h3>
+        <p>El derecho de autor no va pegado al objeto. Si vendes el soporte donde está la obra, no se va ningún derecho patrimonial, salvo pacto expreso.</p>
+        <p class="plain"><b>En corto:</b> vender el disco no es vender la música.</p>
+      </div>
+      <div class="ficha small">
+        <span class="art">Art. 41 · LFDA</span>
+        <h3>Dato rápido</h3>
+        <p>Los derechos patrimoniales no se pueden embargar ni dejar en prenda. Lo que sí se puede embargar es el dinero que generan.</p>
+        <p class="plain"><b>En corto:</b> te pueden embargar las regalías, no la canción.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 · Bloque 1 caso -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Bloque 1 · Caso</div>
+    <div class="case">
+      <div class="story">
+        <div class="labels"><span class="label">EE.UU. · 2015 a hoy</span><span class="label open">Litigio abierto</span></div>
+        <h2>Wu-Tang Clan · "Once Upon a Time in Shaolin"</h2>
+        <p>El grupo grabó un disco del que existe una sola copia y lo vendió en 2015 a Martin Shkreli por 2 millones de dólares, con una condición: no explotarlo comercialmente durante 88 años.</p>
+        <p>El gobierno de EE.UU. se lo decomisó y en 2021 lo subastó a un colectivo llamado PleasrDAO. Hoy pelean en tribunales: por copias que Shkreli habría hecho y por quién se queda con una parte del copyright.</p>
+      </div>
+      <div class="reading">
+        <div class="tag">Lo que nos enseña</div>
+        <p class="key">Compró el objeto más caro del hip hop. Lo que no compró fue el derecho a explotarlo.</p>
+        <p class="matiz"><b>Ancla en México:</b> art. 38. El soporte y los derechos viajan por separado.</p>
+        <p class="matiz"><b>Matiz:</b> es ley de EE.UU.; aquí lo usamos para ilustrar el principio.</p>
+        <p class="muletilla">Esto sigue abierto: lo traigo para ilustrar, no para darles el veredicto.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8 · Bloque 1 pregunta -->
+<section class="slide question">
+  <div class="wrap">
+    <div class="kicker">Bloque 1 · Pregunta al grupo</div>
+    <span class="q-label">Pausa el video</span>
+    <p class="q-text">Compras en una subasta la libreta original donde un compositor famoso escribió sus letras. ¿Puedes publicar un libro con ellas?</p>
+    <p class="hint"><b>Pista:</b> piensa qué compraste exactamente. ¿El papel o los derechos? Vuelve al art. 38.</p>
+  </div>
+</section>
+
+<!-- 9 · Bloque 2 apertura -->
+<section class="slide block-open">
+  <div class="wrap">
+    <div class="kicker">Bloque 2 · 17 min</div>
+    <div class="big-n">02</div>
+    <h2>Vender o rentar</h2>
+    <p class="lead">No es lo mismo ceder tu canción que prestarla. Y no es lo mismo prestarla a uno que a todos.</p>
+    <div class="arts">LFDA · Arts. 30, 35, 36 y 39</div>
+  </div>
+</section>
+
+<!-- 10 · Bloque 2 concepto -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Bloque 2 · Concepto clave</div>
+    <h2>Tres formas de soltar tu obra</h2>
+    <div class="cols three">
+      <div class="concept wine">
+        <div class="tag">Transferencia</div>
+        <h3>Vender la casa</h3>
+        <p>Los derechos pasan a otro mientras dure el trato. Tú ya no decides sobre ellos.</p>
+      </div>
+      <div class="concept goldtop">
+        <div class="tag">Licencia exclusiva</div>
+        <h3>Rentarla a uno solo</h3>
+        <p>Solo esa persona la usa. Ni tú mismo puedes meterte mientras dure.</p>
+      </div>
+      <div class="concept accent">
+        <div class="tag">Licencia no exclusiva</div>
+        <h3>Rentarla a varios</h3>
+        <p>Das permiso a muchos al mismo tiempo. Así funcionan casi todas las plataformas.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 · Bloque 2 anclaje legal (1) -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Bloque 2 · Anclaje legal</div>
+    <div class="fichas two">
+      <div class="ficha">
+        <span class="art">Art. 30 · LFDA · Primer párrafo</span>
+        <h3>Dos caminos</h3>
+        <p>El titular puede transferir sus derechos patrimoniales u otorgar licencias de uso, exclusivas o no exclusivas.</p>
+        <p class="plain"><b>En corto:</b> vender o rentar. No hay más.</p>
+      </div>
+      <div class="ficha">
+        <span class="art">Art. 35 · LFDA</span>
+        <h3>La exclusiva se dice con todas sus letras</h3>
+        <p>La licencia exclusiva tiene que darse expresamente con ese carácter. Salvo pacto en contrario, permite explotar la obra dejando fuera a todos los demás y dar permisos no exclusivos a terceros.</p>
+        <p class="plain"><b>En corto:</b> si no dice "exclusiva", no lo es.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 · Bloque 2 anclaje legal (2) -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Bloque 2 · Anclaje legal</div>
+    <div class="fichas two">
+      <div class="ficha">
+        <span class="art">Art. 36 · LFDA</span>
+        <h3>Si tienes la exclusiva, muévela</h3>
+        <p>Quien recibe una licencia exclusiva está obligado a poner todos los medios necesarios para explotar la obra, según su naturaleza y los usos de la industria.</p>
+        <p class="plain"><b>En corto:</b> nadie puede comprarte la exclusiva para guardarla en un cajón.</p>
+      </div>
+      <div class="ficha">
+        <span class="art">Art. 39 · LFDA</span>
+        <h3>Cada uso se negocia aparte</h3>
+        <p>El permiso para difundir una obra por radio, televisión o un medio parecido no incluye el de redifundirla ni explotarla.</p>
+        <p class="plain"><b>En corto:</b> un permiso es para lo que dice, no para todo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 13 · Bloque 2 caso -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Bloque 2 · Caso</div>
+    <div class="case">
+      <div class="story">
+        <div class="labels"><span class="label">EE.UU. y Canadá · 2022 a 2024</span></div>
+        <h2>Neil Young vs. Spotify</h2>
+        <p>En enero de 2022 Neil Young quiso sacar toda su música de Spotify en protesta por el podcast de Joe Rogan.</p>
+        <p>Se topó con un detalle: por contrato, no tenía el control para hacerlo. Las licencias las negociaba su disquera, Warner / Reprise. Tuvo que pedírselo a ellos, y aceptaron. Regresó a la plataforma en marzo de 2024.</p>
+      </div>
+      <div class="reading">
+        <div class="tag">Lo que nos enseña</div>
+        <p class="key">Spotify no es dueño de nada: opera con licencias. Y decide quien tiene la titularidad, aunque seas Neil Young.</p>
+        <p class="matiz"><b>Ancla en México:</b> arts. 30 y 35.</p>
+        <p class="matiz"><b>Matiz:</b> lo que controlaba Warner eran las grabaciones (fonograma, lo vemos en Sesiones 10 y 12). La lógica de las licencias es la misma para la composición.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 14 · Bloque 2 pregunta -->
+<section class="slide question">
+  <div class="wrap">
+    <div class="kicker">Bloque 2 · Pregunta al grupo</div>
+    <span class="q-label">Pausa el video</span>
+    <p class="q-text">Le das a una agencia de sync licencia exclusiva de tu beat por dos años. Nunca lo coloca en nada. ¿Puedes reclamarle algo?</p>
+    <p class="hint"><b>Pista:</b> busca qué obligación tiene quien recibe una exclusiva. Art. 36.</p>
+  </div>
+</section>
+
+<!-- 15 · Bloque 2 hilo IA -->
+<section class="slide question ia">
+  <div class="wrap">
+    <div class="kicker">Bloque 2 · Hilo IA</div>
+    <span class="q-label">Para pensar</span>
+    <p class="q-text">Tu licencia dice "para streaming y redes". ¿Incluye usar tu canción para entrenar una inteligencia artificial?</p>
+    <p class="hint"><b>Ojo:</b> la LFDA no tiene un artículo sobre entrenamiento de IA; en la Sesión 5 vimos que es iniciativa, no ley. Lo que sí sabemos por el art. 39 es que cada uso se trata por separado. <b>Moraleja:</b> si no quieres que se use para IA, que el contrato lo diga.</p>
+  </div>
+</section>
+
+<!-- 16 · Bloque 3 apertura -->
+<section class="slide block-open">
+  <div class="wrap">
+    <div class="kicker">Bloque 3 · 18 min</div>
+    <div class="big-n">03</div>
+    <h2>El papel manda</h2>
+    <p class="lead">En derechos de autor, lo que no está por escrito no existe.</p>
+    <div class="arts">LFDA · Arts. 30, 32, 33 y 37</div>
+  </div>
+</section>
+
+<!-- 17 · Bloque 3 concepto -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Bloque 3 · Concepto clave</div>
+    <h2>Las reglas de todo contrato</h2>
+    <div class="cols three">
+      <div class="concept wine">
+        <div class="tag">Regla 1</div>
+        <h3>Por escrito</h3>
+        <p>Sin papel firmado, no hay transmisión. El trato de palabra no transmite nada.</p>
+      </div>
+      <div class="concept goldtop">
+        <div class="tag">Regla 2</div>
+        <h3>Con pago</h3>
+        <p>Toda transmisión es onerosa: el autor recibe algo a cambio.</p>
+      </div>
+      <div class="concept accent">
+        <div class="tag">Regla 3</div>
+        <h3>Con caducidad</h3>
+        <p>Toda transmisión es temporal. En México no existe el "para siempre".</p>
+      </div>
+    </div>
+    <div class="callout"><b>Y un extra:</b> si quieres que el contrato valga frente a cualquier persona, no solo entre ustedes, se registra.</div>
+  </div>
+</section>
+
+<!-- 18 · Bloque 3 anclaje legal (1) -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Bloque 3 · Anclaje legal</div>
+    <div class="fichas two">
+      <div class="ficha">
+        <span class="art">Art. 30 · LFDA · Párrafos 2 y 3</span>
+        <h3>Onerosa, temporal y por escrito</h3>
+        <p>Toda transmisión de derechos patrimoniales es onerosa y temporal. Si no se acordó cuánto pagar, lo deciden los tribunales. Contratos y licencias van invariablemente por escrito, o son nulos de pleno derecho.</p>
+        <p class="plain"><b>En corto:</b> sin papel, el contrato no existe.</p>
+      </div>
+      <div class="ficha">
+        <span class="art">Art. 33 · LFDA</span>
+        <h3>Cinco años por default</h3>
+        <p>Si el contrato no dice cuánto dura, se entiende por 5 años. Más de 15 años solo de forma excepcional, cuando la obra o la inversión lo justifiquen.</p>
+        <p class="plain"><b>En corto:</b> si nadie puso fecha, la ley la pone.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 19 · Bloque 3 anclaje legal (2) -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Bloque 3 · Anclaje legal</div>
+    <div class="fichas two">
+      <div class="ficha">
+        <span class="art">Art. 32 · LFDA</span>
+        <h3>Registro para valer frente a todos</h3>
+        <p>Los contratos que transmiten derechos patrimoniales deben inscribirse en el Registro Público del Derecho de Autor para tener efectos contra terceros.</p>
+        <p class="plain"><b>En corto:</b> sin registro, vale entre ustedes; con registro, vale frente a todo el mundo.</p>
+      </div>
+      <div class="ficha">
+        <span class="art">Art. 37 · LFDA</span>
+        <h3>Notario más registro: vía rápida</h3>
+        <p>Si el contrato se firma ante notario, corredor público u otro fedatario y además está inscrito en el Registro, trae aparejada ejecución.</p>
+        <p class="plain"><b>En corto:</b> el papel ya prueba lo que te deben y puedes cobrar por la vía rápida en un juicio.</p>
+      </div>
+    </div>
+    <div class="bridge"><b>Próxima sesión</b><span>El art. 34 prohíbe vender "toda la música que compongas en el futuro" y las cláusulas de no crear nada. Lo vemos a fondo en la Sesión 8.</span></div>
+  </div>
+</section>
+
+<!-- 20 · Bloque 3 caso 1 -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Bloque 3 · Caso</div>
+    <div class="case">
+      <div class="story">
+        <div class="labels"><span class="label">EE.UU. · 2012</span></div>
+        <h2>Victor Willis y "Y.M.C.A."</h2>
+        <p>El cantante de Village People había cedido sus derechos sobre las canciones a sus editoras a finales de los setenta.</p>
+        <p>Usó una figura de la ley de EE.UU. que permite recuperar una cesión después de 35 años. En 2012 un juez le dio la razón y recuperó su parte de "Y.M.C.A." y otros éxitos del grupo.</p>
+      </div>
+      <div class="reading">
+        <div class="tag">Lo que nos enseña</div>
+        <p class="key">Allá tuvo que esperar 35 años y pelear en tribunales. Aquí la ley ya lo resuelve desde el día uno.</p>
+        <p class="matiz"><b>Ancla en México:</b> art. 30 (toda transmisión es temporal) y art. 33 (5 años si no se pactó, más de 15 solo por excepción).</p>
+        <p class="matiz"><b>Matiz:</b> ley de EE.UU., lo usamos como contraste.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 21 · Bloque 3 caso 2 -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Bloque 3 · Caso</div>
+    <div class="case">
+      <div class="story">
+        <div class="labels"><span class="label mx">México · 2021 a hoy</span><span class="label open">Litigio abierto</span></div>
+        <h2>Christian Nodal vs. Universal Music</h2>
+        <p>Nodal firmó su primer contrato con Universal a los 17 años. En 2021 él y sus papás demandaron a la disquera por los derechos de sus canciones.</p>
+        <p>Universal contrademandó: acusa a la familia de falsificar al menos 32 documentos para quedarse con grabaciones que, según la disquera, le pertenecen.</p>
+      </div>
+      <div class="reading">
+        <div class="tag">Lo que nos enseña</div>
+        <p class="key">Toda la guerra se pelea sobre una pregunta: qué papeles son válidos.</p>
+        <p class="matiz"><b>Ancla en México:</b> art. 30. El escrito no es un trámite: es la prueba de quién es dueño.</p>
+        <p class="matiz"><b>Matiz:</b> son acusaciones sin resolver, y buena parte es sobre grabaciones (fonograma).</p>
+        <p class="muletilla">Esto sigue abierto: lo traigo para ilustrar, no para darles el veredicto.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 22 · Bloque 3 pregunta -->
+<section class="slide question">
+  <div class="wrap">
+    <div class="kicker">Bloque 3 · Pregunta al grupo</div>
+    <span class="q-label">Pausa el video</span>
+    <p class="q-text">Tu amigo productor te dice: "Entre nosotros no necesitamos contrato, la rola es mitad y mitad." ¿Qué tienen en realidad?</p>
+    <p class="hint"><b>Pista:</b> lee otra vez el último párrafo del art. 30.</p>
+  </div>
+</section>
+
+<!-- 23 · Tarea -->
+<section class="slide">
+  <div class="wrap">
+    <div class="kicker">Tarea 7</div>
+    <h2>Radiografía de un contrato real</h2>
+    <p class="lead" style="margin-bottom:14px;">Elige una distribuidora digital, plataforma de beats o agencia de sync que podrías usar para lanzar tu música. Busca sus términos y condiciones para artistas y contesta, citando el artículo:</p>
+    <ol class="exercises">
+      <li><span>¿Es transferencia o licencia? ¿Exclusiva o no exclusiva? <span class="a">Arts. 30 y 35</span></span></li>
+      <li><span>¿Cuánto dura y cómo se termina? ¿Qué pasaría en México si no dijera nada? <span class="a">Arts. 30 y 33</span></span></li>
+      <li><span>¿Cómo te pagan? ¿Es onerosa? <span class="a">Art. 30</span></span></li>
+      <li><span>¿Qué usos autoriza y cuáles no? ¿Dice algo de IA? <span class="a">Art. 39</span></span></li>
+      <li><span>¿Qué ley y qué país rigen el contrato?</span></li>
+      <li><span>Conclusión: ¿lo firmarías tal cual? ¿Qué pedirías cambiar?</span></li>
+    </ol>
+    <div class="delivery">
+      <div><b>Formato</b>Word o PDF</div>
+      <div><b>Extensión</b>2 a 3 cuartillas</div>
+      <div><b>Modalidad</b>Individual · APA</div>
+      <div><b>Entrega</b>Google Classroom</div>
+    </div>
+    <p class="spirit">No es memorizar artículos: es perderle el miedo a leer un contrato.</p>
+  </div>
+</section>
+
+<!-- 24 · Cierre -->
+<section class="slide">
+  <div class="wrap">
+    <div class="closing">
+      <div class="kicker" style="justify-content:center;">Para llevarte</div>
+      <p class="quote">Un contrato no es desconfianza. <em>Es memoria.</em></p>
+      <p class="lead" style="margin: 18px auto 0;">La que se te olvida a ti, a tu socio y a tu disquera.</p>
+      <p class="next">Siguiente sesión · <b>Contratos: requisitos de fondo y gestión estratégica de la PI</b></p>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<div class="progress-bar" id="progress"></div>
+<div class="nav">
+  <button id="prev" aria-label="Anterior">&#8592;</button>
+  <button id="next" aria-label="Siguiente">&#8594;</button>
+</div>
+<div class="counter" id="counter"></div>
+
+<script>
+(function () {
+  var slides = document.querySelectorAll('.slide');
+  var total = slides.length;
+  var current = 0;
+  var progress = document.getElementById('progress');
+  var counter = document.getElementById('counter');
+  var prevBtn = document.getElementById('prev');
+  var nextBtn = document.getElementById('next');
+
+  function setActive(i) {
+    if (i < 0 || i >= total) return;
+    slides[current].classList.remove('active');
+    current = i;
+    slides[current].classList.add('active');
+    slides[current].scrollTop = 0;
+    progress.style.width = ((current + 1) / total * 100) + '%';
+    counter.textContent = String(current + 1).padStart(2, '0') + ' / ' + String(total).padStart(2, '0');
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+  }
+
+  prevBtn.addEventListener('click', function () { setActive(current - 1); });
+  nextBtn.addEventListener('click', function () { setActive(current + 1); });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight') setActive(current + 1);
+    if (e.key === 'ArrowLeft') setActive(current - 1);
+  });
+
+  var startX = null;
+  document.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    if (startX === null) return;
+    var dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) setActive(dx < 0 ? current + 1 : current - 1);
+    startX = null;
+  });
+
+  slides[0].classList.add('active');
+  setActive(0);
+})();
+</script>
+</body>
+</html>
